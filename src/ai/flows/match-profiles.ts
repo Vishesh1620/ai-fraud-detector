@@ -30,7 +30,7 @@ const JobProfileSchema = z.object({
   requiredSkills: z.string(),
 });
 
-export const MatchInputSchema = z.object({
+const MatchInputSchema = z.object({
   newcomer: NewcomerProfileSchema,
   mentors: z.array(MentorProfileSchema),
   jobs: z.array(JobProfileSchema),
@@ -46,7 +46,7 @@ const MatchSchema = z.object({
     summary: z.string().describe('A brief, encouraging summary explaining why this is a good match.'),
 });
 
-export const MatchOutputSchema = z.object({
+const MatchOutputSchema = z.object({
     matches: z.array(MatchSchema),
     newcomerSummary: z.string().describe("A succinct profile of the newcomer's strengths and the kind of role they seek."),
 });
