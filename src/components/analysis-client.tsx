@@ -1,6 +1,7 @@
 'use client'
 
-import { AnalysisResult, analyzeText } from '@/app/actions'
+import { getMatches } from '@/app/actions'
+import type { MatchOutput } from '@/ai/flows/match-profiles'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -9,57 +10,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { FileUp, Loader2, Type } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { ResultsDisplay } from './results-display'
 
 export function AnalysisClient() {
-  const [text, setText] = useState('')
-  const [fileName, setFileName] = useState('')
-  const [results, setResults] = useState<AnalysisResult | null>(null)
+  const [background, setBackground] = useState('')
+  const [skills, setSkills] = useState('')
+  const [goals, setGoals] = useState('')
+
+  const [results, setResults] = useState<MatchOutput | null>(null)
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      if (file.type !== 'text/plain') {
-        toast({
-          title: 'Invalid File Type',
-          description: 'Please upload a .txt file.',
-          variant: 'destructive',
-        })
-        return
-      }
-      setFileName(file.name)
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const fileContent = e.target?.result as string
-        setText(fileContent)
-      }
-      reader.onerror = () => {
-        toast({
-          title: 'Error Reading File',
-          description: 'There was an issue reading the uploaded file.',
-          variant: 'destructive',
-        })
-      }
-      reader.readAsText(file)
-    }
-  }
-
   const handleSubmit = () => {
-    if (!text.trim()) {
+    if (!background.trim() || !skills.trim() || !goals.trim()) {
       toast({
-        title: 'Input Required',
-        description: 'Please enter text or upload a file to analyze.',
+        title: 'All Fields Required',
+        description: 'Please tell us about your background, skills, and goals.',
         variant: 'destructive',
       })
       return
@@ -68,11 +40,11 @@ export function AnalysisClient() {
     startTransition(async () => {
       setResults(null)
       try {
-        const analysisResults = await analyzeText(text)
-        setResults(analysisResults)
+        const matchResults = await getMatches({ background, skills, goals })
+        setResults(matchResults)
       } catch (error) {
         toast({
-          title: 'Analysis Failed',
+          title: 'Matching Failed',
           description:
             (error as Error).message ||
             'An unexpected error occurred. Please try again.',
@@ -81,93 +53,106 @@ export function AnalysisClient() {
       }
     })
   }
-  
+
   const LoadingSkeletons = () => (
-    <div className="space-y-4 mt-6">
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-12 w-full" />
-      <Skeleton className="h-12 w-full" />
+    <div className="space-y-8 mt-6">
+       <div className="space-y-4">
+        <Skeleton className="h-8 w-1/3" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-lg" />
+        <Skeleton className="h-48 w-full rounded-lg" />
+      </div>
     </div>
   )
 
   return (
-    <Card className="w-full max-w-4xl mx-auto shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-3xl font-headline text-center">
-          AI-Powered Text Analysis
-        </CardTitle>
-        <CardDescription className="text-center">
-          Enter text directly or upload a text file to extract summaries,
-          analyze sentiment, and identify key entities.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="text" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="text">
-              <Type className="mr-2" /> Text Input
-            </TabsTrigger>
-            <TabsTrigger value="file">
-              <FileUp className="mr-2" /> File Upload
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="text" className="mt-4">
-            <Textarea
-              placeholder="Paste your text here for analysis..."
-              className="min-h-[200px] text-base"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </TabsContent>
-          <TabsContent value="file" className="mt-4">
-            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg">
-              <Label htmlFor="file-upload" className="cursor-pointer">
-                <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
-                <span className="mt-2 block text-sm font-medium text-muted-foreground">
-                  Click to upload a .txt file
-                </span>
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-4xl mx-auto shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-3xl font-headline text-center">
+            Your Personal Career Navigator
+          </CardTitle>
+          <CardDescription className="text-center">
+            Describe your background, skills, and ambitions. Our AI will connect
+            you with the right mentors and opportunities.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="background" className="text-lg font-medium">
+                Your Background
               </Label>
-              <Input
-                id="file-upload"
-                type="file"
-                className="sr-only"
-                accept=".txt"
-                onChange={handleFileChange}
+              <p className="text-sm text-muted-foreground mb-2">
+                Tell us about your education and work history.
+              </p>
+              <Textarea
+                id="background"
+                placeholder="e.g., Bachelor's in Computer Science from University of Toronto, 2 years as a junior developer at a startup..."
+                className="min-h-[150px] text-base"
+                value={background}
+                onChange={(e) => setBackground(e.target.value)}
               />
-              {fileName && (
-                <p className="mt-4 text-sm text-foreground">
-                  Selected file: <strong>{fileName}</strong>
-                </p>
-              )}
             </div>
-          </TabsContent>
-        </Tabs>
+            <div>
+              <Label htmlFor="skills" className="text-lg font-medium">
+                Your Skills
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                List the skills you're proficient in.
+              </p>
+              <Textarea
+                id="skills"
+                placeholder="e.g., React, Node.js, Python, Figma, Public Speaking, Project Management..."
+                className="min-h-[100px] text-base"
+                value={skills}
+                onChange={(e) => setSkills(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="goals" className="text-lg font-medium">
+                Your Career Goals
+              </Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                What are you looking for in your next role or mentor?
+              </p>
+              <Textarea
+                id="goals"
+                placeholder="e.g., I want to transition into a product management role in the tech industry. I'm looking for a mentor who can guide me through this process."
+                className="min-h-[100px] text-base"
+                value={goals}
+                onChange={(e) => setGoals(e.target.value)}
+              />
+            </div>
+          </div>
 
-        <div className="mt-6 flex justify-center">
-          <Button
-            size="lg"
-            onClick={handleSubmit}
-            disabled={isPending}
-            className="w-full sm:w-auto"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              'Analyze Text'
-            )}
-          </Button>
-        </div>
+          <div className="mt-8 flex justify-center">
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              disabled={isPending}
+              className="w-full sm:w-auto"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Finding Your Matches...
+                </>
+              ) : (
+                'Find My Matches'
+              )}
+            </Button>
+          </div>
 
-        {(isPending || results) && <Separator className="my-6" />}
-        
-        {isPending && <LoadingSkeletons />}
+          {isPending && <LoadingSkeletons />}
 
-        {!isPending && results && <ResultsDisplay results={results} />}
-
-      </CardContent>
-    </Card>
+          {!isPending && results && <ResultsDisplay results={results} />}
+        </CardContent>
+      </Card>
+    </div>
   )
 }

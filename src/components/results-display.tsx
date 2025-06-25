@@ -1,142 +1,75 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion'
+import type { MatchOutput } from '@/ai/flows/match-profiles'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { AlertCircle, Frown, Meh, Smile, FileJson, BookText, BrainCircuit } from 'lucide-react'
-import type { AnalysisResult } from '../app/actions'
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Briefcase, User, Star } from 'lucide-react'
 
-interface ResultsDisplayProps {
-  results: AnalysisResult
+interface MatchResultsProps {
+  results: MatchOutput
 }
 
-const ErrorDisplay = ({ error }: { error: string }) => (
-  <div className="flex items-center gap-2 text-destructive">
-    <AlertCircle className="h-5 w-5" />
-    <p>
-      <strong>Error:</strong> {error}
-    </p>
-  </div>
-)
-
-const SentimentDisplay = ({
-  sentiment,
-}: {
-  sentiment: NonNullable<AnalysisResult['sentiment']>
-}) => {
-  if ('error' in sentiment) {
-    return <ErrorDisplay error={sentiment.error} />
-  }
-
-  const getSentimentIcon = (score: number) => {
-    if (score > 0.25) return <Smile className="text-green-500" />
-    if (score < -0.25) return <Frown className="text-red-500" />
-    return <Meh className="text-yellow-500" />
-  }
-  
-  const getSentimentLabel = (score: number) => {
-    if (score > 0.25) return 'Positive'
-    if (score < -0.25) return 'Negative'
-    return 'Neutral'
-  }
+export function ResultsDisplay({ results }: MatchResultsProps) {
+  const { newcomerSummary, matches } = results
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
-      <div className="flex items-center gap-2">
-        {getSentimentIcon(sentiment.score)}
-        <span className="font-semibold text-lg">{getSentimentLabel(sentiment.score)}</span>
-      </div>
-      <div className="flex gap-4 text-sm text-muted-foreground">
-        <span>Score: <Badge variant="secondary">{sentiment.score.toFixed(2)}</Badge></span>
-        <span>Magnitude: <Badge variant="secondary">{sentiment.magnitude.toFixed(2)}</Badge></span>
-      </div>
-    </div>
-  )
-}
+    <div className="mt-6 space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Star className="text-yellow-500" /> Your AI-Generated Profile
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">{newcomerSummary}</p>
+        </CardContent>
+      </Card>
 
-export function ResultsDisplay({ results }: ResultsDisplayProps) {
-  const hasEntities = 'entities' in results.entities && results.entities.entities.length > 0;
-
-  return (
-    <div className="mt-6">
-      <h3 className="text-2xl font-headline text-center mb-4">Analysis Results</h3>
-      <Accordion type="multiple" defaultValue={['summary', 'sentiment', 'entities']} className="w-full">
-        <AccordionItem value="summary">
-          <AccordionTrigger className="text-lg font-semibold">
-            <BookText className="mr-2 h-5 w-5 text-primary"/>
-            Summary
-          </AccordionTrigger>
-          <AccordionContent className="text-base leading-relaxed p-2">
-            {'error' in results.summary ? (
-              <ErrorDisplay error={results.summary.error} />
-            ) : (
-              results.summary.summary
-            )}
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="sentiment">
-          <AccordionTrigger className="text-lg font-semibold">
-             <Smile className="mr-2 h-5 w-5 text-primary"/>
-            Sentiment Analysis
-          </AccordionTrigger>
-          <AccordionContent className="p-2">
-            <SentimentDisplay sentiment={results.sentiment} />
-          </AccordionContent>
-        </AccordionItem>
-        <AccordionItem value="entities">
-          <AccordionTrigger className="text-lg font-semibold">
-            <BrainCircuit className="mr-2 h-5 w-5 text-primary"/>
-            Extracted Entities
-          </AccordionTrigger>
-          <AccordionContent className="p-2">
-            {'error' in results.entities ? (
-              <ErrorDisplay error={results.entities.error} />
-            ) : !hasEntities ? (
-              <p className="text-muted-foreground">No entities were extracted from the text.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Entity Name</TableHead>
-                    <TableHead>Type</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {results.entities.entities.map((entity, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{entity.name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{entity.type}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-         <AccordionItem value="raw-json">
-          <AccordionTrigger className="text-lg font-semibold">
-            <FileJson className="mr-2 h-5 w-5 text-primary"/>
-            Raw JSON Output
-          </AccordionTrigger>
-          <AccordionContent>
-            <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-              <code>{JSON.stringify(results, null, 2)}</code>
-            </pre>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <div>
+        <h3 className="text-2xl font-headline text-center mb-4">Your Top Matches</h3>
+        <div className="grid gap-6 md:grid-cols-2">
+          {matches.map((match, index) => (
+            <Card key={index} className="flex flex-col">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center gap-3">
+                      {match.type === 'mentor' ? (
+                        <User className="text-primary" />
+                      ) : (
+                        <Briefcase className="text-primary" />
+                      )}
+                      {match.name}
+                    </CardTitle>
+                    <CardDescription>{match.role}</CardDescription>
+                  </div>
+                  <Badge variant="secondary" className="text-lg">
+                    {match.matchScore}%
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <div className="space-y-2">
+                  <Progress value={match.matchScore} className="h-2" />
+                  <p className="text-sm text-muted-foreground pt-2">{match.summary}</p>
+                </div>
+              </CardContent>
+              <CardFooter>
+                 <Button variant="outline" className="w-full">
+                    {match.type === 'mentor' ? 'Connect with Mentor' : 'View Job'}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

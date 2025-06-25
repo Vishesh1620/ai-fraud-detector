@@ -1,4 +1,4 @@
-import { BrainCircuit } from 'lucide-react'
+import { Users } from 'lucide-react'
 import Link from 'next/link'
 
 export function Header() {
@@ -9,8 +9,8 @@ export function Header() {
           href="/"
           className="flex items-center gap-3 font-bold text-xl text-card-foreground"
         >
-          <BrainCircuit className="h-7 w-7 text-primary" />
-          <span className="font-headline">LexiCon</span>
+          <Users className="h-7 w-7 text-primary" />
+          <span className="font-headline">MentorMatch AI</span>
         </Link>
       </div>
     </header>

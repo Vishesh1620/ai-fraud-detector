@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Header } from "@/components/header";
 
 export const metadata: Metadata = {
-  title: "LexiCon - AI Text Analysis",
-  description: "Upload or enter text to get detailed analysis including summarization, sentiment, and entity extraction.",
+  title: "MentorMatch AI - Your Career Connection",
+  description: "AI-powered matching to connect newcomers with mentors and job opportunities.",
 };
 
 export default function RootLayout({

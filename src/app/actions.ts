@@ -1,49 +1,66 @@
-
 'use server'
 
-import {
-  analyzeTextSentiment,
-  AnalyzeTextSentimentOutput,
-} from '@/ai/flows/analyze-text-sentiment'
-import { extractEntities, ExtractEntitiesOutput } from '@/ai/flows/extract-entities'
-import {
-  summarizeDocument,
-  SummarizeDocumentOutput,
-} from '@/ai/flows/summarize-document'
+import { findMatches, MatchInput, MatchOutput } from '@/ai/flows/match-profiles'
 
-type SettledResult<T> =
-  | { status: 'fulfilled'; value: T }
-  | { status: 'rejected'; reason: any }
+// Mock data for mentors and jobs
+const mentors = [
+  {
+    name: 'Alice',
+    role: 'Marketing Manager',
+    field: 'Tech Marketing',
+    backgroundSummary: 'Immigrated from Asia and has been a mentor for 5 years.',
+  },
+  {
+    name: 'David',
+    role: 'Senior Software Engineer',
+    field: 'Fintech',
+    backgroundSummary: 'Passionate about open-source and helping new developers.',
+  },
+  {
+    name: 'Maria',
+    role: 'UX Designer',
+    field: 'Healthcare Tech',
+    backgroundSummary: 'Changed careers from nursing to UX design.',
+  },
+]
 
-export interface AnalysisResult {
-  summary: SummarizeDocumentOutput | { error: string }
-  sentiment: AnalyzeTextSentimentOutput | { error: string }
-  entities: ExtractEntitiesOutput | { error: string }
-}
+const jobs = [
+  {
+    companyName: 'Innovate Inc.',
+    role: 'Junior Product Manager',
+    description: 'Looking for a passionate individual to help shape our new line of products. Great for someone with strong communication skills and a knack for organization.',
+    requiredSkills: 'Project management, communication, market research',
+  },
+  {
+    companyName: 'DataDriven Co.',
+    role: 'Data Analyst Intern',
+    description: 'An opportunity to work with our data science team on real-world problems. Perfect for recent graduates with a strong analytical mindset.',
+    requiredSkills: 'SQL, Python (Pandas), Statistics, Data Visualization',
+  },
+]
 
-export async function analyzeText(text: string): Promise<AnalysisResult> {
-  if (!text || text.trim().length === 0) {
-    throw new Error('Input text cannot be empty.')
+export async function getMatches(newcomerProfile: MatchInput['newcomer']): Promise<MatchOutput> {
+  if (
+    !newcomerProfile.background ||
+    !newcomerProfile.skills ||
+    !newcomerProfile.goals
+  ) {
+    throw new Error('All profile fields are required.')
   }
 
-  const [summaryResult, sentimentResult, entitiesResult] =
-    await Promise.allSettled([
-      summarizeDocument({ text }),
-      analyzeTextSentiment({ text }),
-      extractEntities({ text }),
-    ])
-
-  const getResult = <T>(settledResult: SettledResult<T>): T | { error: string } => {
-    if (settledResult.status === 'fulfilled') {
-      return settledResult.value
-    }
-    console.error('Analysis failed:', settledResult.reason)
-    return { error: settledResult.reason?.message || 'An unknown error occurred' }
+  const input: MatchInput = {
+    newcomer: newcomerProfile,
+    mentors,
+    jobs,
   }
 
-  return {
-    summary: getResult(summaryResult),
-    sentiment: getResult(sentimentResult),
-    entities: getResult(entitiesResult),
+  try {
+    const results = await findMatches(input)
+    // Sort matches by score in descending order
+    results.matches.sort((a, b) => b.matchScore - a.matchScore)
+    return results
+  } catch (error) {
+    console.error('Error getting matches:', error)
+    throw new Error('Failed to get matches from AI. Please try again.')
   }
 }
