@@ -39,17 +39,13 @@ const jobs = [
   },
 ]
 
-export async function getMatches(newcomerProfile: MatchInput['newcomer']): Promise<MatchOutput> {
-  if (
-    !newcomerProfile.background ||
-    !newcomerProfile.skills ||
-    !newcomerProfile.goals
-  ) {
-    throw new Error('All profile fields are required.')
+export async function getMatches({ resume }: { resume: string }): Promise<MatchOutput> {
+  if (!resume) {
+    throw new Error('A resume file is required.')
   }
 
   const input: MatchInput = {
-    newcomer: newcomerProfile,
+    newcomer: { resume },
     mentors,
     jobs,
   }

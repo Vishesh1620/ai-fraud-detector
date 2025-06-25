@@ -11,9 +11,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'zod';
 
 const NewcomerProfileSchema = z.object({
-  background: z.string().describe('The user\'s background, including education and work history.'),
-  skills: z.string().describe('A list of the user\'s skills.'),
-  goals: z.string().describe('The user\'s career goals.'),
+  resume: z.string().describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
 });
 
 const MentorProfileSchema = z.object({
@@ -63,12 +61,10 @@ const prompt = ai.definePrompt({
   output: {schema: MatchOutputSchema},
   prompt: `You are an AI career-matching expert for newcomers. Your goal is to provide encouraging and helpful guidance.
 
-First, analyze the newcomer's profile to understand their strengths and career aspirations. Generate a succinct, 2-3 sentence profile summary of their strengths and the kind of role they would excel in.
+First, analyze the newcomer's resume to understand their strengths and career aspirations. Generate a succinct, 2-3 sentence profile summary of their strengths and the kind of role they would excel in.
 
-Newcomer Profile:
-- Background: {{{newcomer.background}}}
-- Skills: {{{newcomer.skills}}}
-- Goals: {{{newcomer.goals}}}
+Newcomer's Resume:
+{{media url=newcomer.resume}}
 
 Then, for each provided mentor and job opening, evaluate how good of a match they are for the newcomer. Provide a match score from 0 to 100 and a brief, one-sentence summary explaining why they are a good match. The summary should be encouraging and highlight the potential connection.
 
