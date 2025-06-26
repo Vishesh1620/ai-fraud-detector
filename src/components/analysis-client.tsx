@@ -167,7 +167,7 @@ export function AnalysisClient() {
                     <Textarea
                       id="education"
                       name="education"
-                      placeholder="e.g., Bachelor's in Computer Science, Google Project Management Certificate"
+                      placeholder="e.g., Bachelor's in Computer Science. Keep it brief, listing your most relevant qualifications."
                       className="mt-1 min-h-[100px] text-base"
                       value={textInputs.education}
                       onChange={handleTextChange}
@@ -178,7 +178,7 @@ export function AnalysisClient() {
                     <Textarea
                       id="workHistory"
                       name="workHistory"
-                      placeholder="e.g., Sales Associate at Tech Corp (2020-2022), Intern at Startup Inc. (Summer 2019)"
+                      placeholder="e.g., Sales Associate at Tech Corp (2020-2022). Summarize your last 2-3 roles."
                       className="mt-1 min-h-[120px] text-base"
                       value={textInputs.workHistory}
                       onChange={handleTextChange}
@@ -189,7 +189,7 @@ export function AnalysisClient() {
                     <Textarea
                       id="skills"
                       name="skills"
-                      placeholder="e.g., JavaScript, React, Public Speaking, Market Research, SQL"
+                      placeholder="e.g., JavaScript, React, Public Speaking. List your top 5-10 skills."
                       className="mt-1 min-h-[100px] text-base"
                       value={textInputs.skills}
                       onChange={handleTextChange}
@@ -200,7 +200,7 @@ export function AnalysisClient() {
                      <Textarea
                       id="careerGoals"
                       name="careerGoals"
-                      placeholder="e.g., To become a product manager in a fast-growing tech company, to find a marketing role where I can use my bilingual skills."
+                      placeholder="e.g., To become a product manager... Be concise, 1-2 sentences is ideal."
                       className="mt-1 min-h-[100px] text-base"
                       value={textInputs.careerGoals}
                       onChange={handleTextChange}
