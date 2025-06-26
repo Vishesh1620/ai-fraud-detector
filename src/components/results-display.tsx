@@ -62,7 +62,11 @@ export function ResultsDisplay({ results }: MatchResultsProps) {
                 </div>
               </CardContent>
               <CardFooter>
-                 <Button variant="outline" className="w-full">
+                 <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.open('#', '_blank')}
+                    >
                     {match.type === 'mentor' ? 'Connect with Mentor' : 'View Job'}
                 </Button>
               </CardFooter>

@@ -42,14 +42,14 @@ const jobs = [
 
 export async function POST(request: Request) {
   try {
-    const { resume } = await request.json();
+    const { resume, backgroundText } = await request.json();
 
-    if (!resume) {
-      return NextResponse.json({ error: 'A resume file is required.' }, { status: 400 });
+    if (!resume && !backgroundText) {
+      return NextResponse.json({ error: 'A resume file or background text is required.' }, { status: 400 });
     }
 
     const input: MatchInput = {
-      newcomer: { resume },
+      newcomer: { resume, backgroundText },
       mentors,
       jobs,
     }
