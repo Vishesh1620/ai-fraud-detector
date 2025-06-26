@@ -59,13 +59,8 @@ export type MatchOutput = z.infer<typeof MatchOutputSchema>;
 
 
 // The exported function simply calls the flow and returns its result.
-// The flow itself will throw an error if the AI response is invalid.
 export async function findMatches(input: MatchInput): Promise<MatchOutput> {
-  const results = await matchProfilesFlow(input);
-  if (!results) {
-    throw new Error('The AI failed to generate a valid response. Please try again.');
-  }
-  return results;
+  return matchProfilesFlow(input);
 }
 
 const prompt = ai.definePrompt({
@@ -117,6 +112,9 @@ Available Jobs:
 Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
 `,
   config: {
+    response: {
+      format: 'json',
+    },
     safetySettings: [
       {
         category: 'HARM_CATEGORY_DANGEROUS_CONTENT',

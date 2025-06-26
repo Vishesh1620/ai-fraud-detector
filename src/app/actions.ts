@@ -20,9 +20,6 @@ export async function getMatches(
 
   try {
     const results = await findMatches(input)
-    if (!results) {
-      throw new Error('The AI failed to generate a valid response. Please try again.');
-    }
     return results
   } catch (error) {
     console.error('Error getting matches:', error)
