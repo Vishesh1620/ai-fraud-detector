@@ -66,11 +66,10 @@ export async function findMatches(input: MatchInput): Promise<MatchOutput> {
 
 const prompt = ai.definePrompt({
   name: 'matchProfilePrompt',
+  system: 'You are a helpful and encouraging career-matching expert for newcomers. Your goal is to provide guidance by analyzing a newcomer\'s profile and matching them with suitable mentors and jobs. Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Do not include markdown formatting like ```json or any text outside of the JSON object itself.',
   input: {schema: MatchInputSchema},
   output: {schema: MatchOutputSchema},
-  prompt: `You are an AI career-matching expert for newcomers. Your goal is to provide encouraging and helpful guidance.
-
-First, analyze the newcomer's information to understand their strengths and career aspirations. Generate a succinct, 2-3 sentence profile summary of their strengths and the kind of role they would excel in.
+  prompt: `First, analyze the newcomer's information to understand their strengths and career aspirations. Generate a succinct, 2-3 sentence profile summary of their strengths and the kind of role they would excel in.
 
 {{#if newcomer.resume}}
 Newcomer's Resume:
@@ -110,7 +109,7 @@ Available Jobs:
 - Required Skills: {{requiredSkills}}
 {{/each}}
 
-Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Do not include markdown formatting like \`\`\`json or any text outside of the JSON object itself. Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
+Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
 `,
   config: {
     safetySettings: [
@@ -148,6 +147,10 @@ const matchProfilesFlow = ai.defineFlow(
       console.error("⚠️ Raw AI response:", response.text);
       throw new Error("AI response was invalid. Raw text:\n" + response.text);
     }
+    
+    // Sort matches by score in descending order
+    output.matches.sort((a, b) => b.matchScore - a.matchScore);
+
     return output;
   }
 );
