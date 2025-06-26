@@ -26,6 +26,7 @@ export async function getMatches(
     return results
   } catch (error) {
     console.error('Error getting matches:', error)
-    throw new Error('Failed to get matches from AI. Please try again.')
+    // Propagate the original, more detailed error message to the client.
+    throw new Error((error as Error).message || 'An unknown error occurred while getting matches.')
   }
 }

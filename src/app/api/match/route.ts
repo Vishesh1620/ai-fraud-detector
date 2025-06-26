@@ -31,6 +31,8 @@ export async function POST(request: Request) {
     if (error instanceof SyntaxError) { // JSON parsing error
         return NextResponse.json({ error: 'Invalid JSON in request body.' }, { status: 400 });
     }
-    return NextResponse.json({ error: 'Failed to get matches from AI. Please try again.' }, { status: 500 });
+     // Propagate the original, more detailed error message in the response.
+    const errorMessage = (error as Error).message || 'An unknown error occurred while getting matches.';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
