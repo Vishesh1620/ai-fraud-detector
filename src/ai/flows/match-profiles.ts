@@ -145,11 +145,8 @@ const matchProfilesFlow = ai.defineFlow(
     const output = response.output;
 
     if (!output) {
-      console.error(
-        'AI failed to produce valid JSON output. Raw text response:',
-        response.text
-      );
-      throw new Error('AI failed to produce a structured response.');
+      console.error("⚠️ Raw AI response:", response.text);
+      throw new Error("AI response was invalid. Raw text:\n" + response.text);
     }
     return output;
   }
