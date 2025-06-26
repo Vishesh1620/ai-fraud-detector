@@ -39,13 +39,16 @@ const jobs = [
   },
 ]
 
-export async function getMatches({ resume, backgroundText }: { resume?: string, backgroundText?: string }): Promise<MatchOutput> {
-  if (!resume && !backgroundText) {
-    throw new Error('A resume file or background text is required.')
+export async function getMatches(
+  { resume, education, workHistory, skills, careerGoals }:
+  { resume?: string; education?: string; workHistory?: string; skills?: string; careerGoals?: string; }
+): Promise<MatchOutput> {
+  if (!resume && !education && !workHistory && !skills && !careerGoals) {
+    throw new Error('A resume file or background information is required.')
   }
 
   const input: MatchInput = {
-    newcomer: { resume, backgroundText },
+    newcomer: { resume, education, workHistory, skills, careerGoals },
     mentors,
     jobs,
   }

@@ -12,9 +12,12 @@ import {z} from 'zod';
 
 const NewcomerProfileSchema = z.object({
   resume: z.string().optional().describe("The user's resume, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
-  backgroundText: z.string().optional().describe("The user's background, skills, and goals as plain text."),
-}).refine(data => data.resume || data.backgroundText, {
-  message: "Either a resume or background text must be provided.",
+  education: z.string().optional().describe("The user's educational background."),
+  workHistory: z.string().optional().describe("The user's work history."),
+  skills: z.string().optional().describe("The user's skills."),
+  careerGoals: z.string().optional().describe("The user's career goals."),
+}).refine(data => data.resume || data.education || data.workHistory || data.skills || data.careerGoals, {
+  message: "Either a resume or at least one text field must be provided.",
 });
 
 
@@ -71,9 +74,21 @@ First, analyze the newcomer's information to understand their strengths and care
 Newcomer's Resume:
 {{media url=newcomer.resume}}
 {{/if}}
-{{#if newcomer.backgroundText}}
-Newcomer's Background Information:
-{{newcomer.backgroundText}}
+{{#if newcomer.education}}
+Newcomer's Education:
+{{newcomer.education}}
+{{/if}}
+{{#if newcomer.workHistory}}
+Newcomer's Work History:
+{{newcomer.workHistory}}
+{{/if}}
+{{#if newcomer.skills}}
+Newcomer's Skills:
+{{newcomer.skills}}
+{{/if}}
+{{#if newcomer.careerGoals}}
+Newcomer's Career Goals:
+{{newcomer.careerGoals}}
 {{/if}}
 
 Then, for each provided mentor and job opening, evaluate how good of a match they are for the newcomer. Provide a match score from 0 to 100 and a brief, one-sentence summary explaining why they are a good match. The summary should be encouraging and highlight the potential connection.

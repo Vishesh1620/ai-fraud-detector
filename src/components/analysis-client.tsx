@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
@@ -21,7 +22,12 @@ import { ResultsDisplay } from './results-display'
 
 export function AnalysisClient() {
   const [file, setFile] = useState<File | null>(null)
-  const [text, setText] = useState<string>('')
+  const [textInputs, setTextInputs] = useState({
+    education: '',
+    workHistory: '',
+    skills: '',
+    careerGoals: '',
+  })
   const [activeTab, setActiveTab] = useState('upload')
   const [results, setResults] = useState<MatchOutput | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -35,6 +41,11 @@ export function AnalysisClient() {
     }
   }
 
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = event.target
+    setTextInputs((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleSubmit = () => {
     if (activeTab === 'upload' && !file) {
       toast({
@@ -44,10 +55,18 @@ export function AnalysisClient() {
       })
       return
     }
-    if (activeTab === 'text' && !text.trim()) {
+
+    const { education, workHistory, skills, careerGoals } = textInputs
+    if (
+      activeTab === 'text' &&
+      !education.trim() &&
+      !workHistory.trim() &&
+      !skills.trim() &&
+      !careerGoals.trim()
+    ) {
       toast({
-        title: 'No Background Text Provided',
-        description: 'Please enter your background information to find matches.',
+        title: 'No Information Provided',
+        description: 'Please fill out at least one field to find matches.',
         variant: 'destructive',
       })
       return
@@ -56,7 +75,13 @@ export function AnalysisClient() {
     startTransition(async () => {
       setResults(null)
       try {
-        let payload: { resume?: string; backgroundText?: string } = {}
+        let payload: {
+          resume?: string;
+          education?: string;
+          workHistory?: string;
+          skills?: string;
+          careerGoals?: string;
+        } = {}
 
         if (activeTab === 'upload' && file) {
           payload.resume = await new Promise<string>((resolve, reject) => {
@@ -65,8 +90,8 @@ export function AnalysisClient() {
             reader.onerror = (error) => reject(error)
             reader.readAsDataURL(file)
           })
-        } else if (activeTab === 'text' && text) {
-          payload.backgroundText = text
+        } else if (activeTab === 'text') {
+          payload = { ...textInputs }
         }
 
         const matchResults = await getMatches(payload)
@@ -106,7 +131,7 @@ export function AnalysisClient() {
             Your Personal Career Navigator
           </CardTitle>
           <CardDescription className="text-center">
-            Upload your resume or paste your background, and our AI will connect you with the right
+            Upload your resume or enter your details, and our AI will connect you with the right
             mentors and opportunities.
           </CardDescription>
         </CardHeader>
@@ -118,7 +143,7 @@ export function AnalysisClient() {
           >
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="upload">Upload Resume</TabsTrigger>
-              <TabsTrigger value="text">Paste Background</TabsTrigger>
+              <TabsTrigger value="text">Enter Details</TabsTrigger>
             </TabsList>
             <TabsContent value="upload">
               <Card className="p-6">
@@ -136,15 +161,52 @@ export function AnalysisClient() {
             </TabsContent>
             <TabsContent value="text">
               <Card className="p-6">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Paste your background, skills, work history, and career goals below.
-                </p>
-                <Textarea
-                  placeholder="Tell us about your work history, education, skills, and what you're looking for..."
-                  className="min-h-[150px] text-base"
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                />
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="education" className="text-sm font-medium">Education</Label>
+                    <Textarea
+                      id="education"
+                      name="education"
+                      placeholder="e.g., Bachelor's in Computer Science, Google Project Management Certificate"
+                      className="mt-1 min-h-[100px] text-base"
+                      value={textInputs.education}
+                      onChange={handleTextChange}
+                    />
+                  </div>
+                   <div>
+                    <Label htmlFor="workHistory" className="text-sm font-medium">Work History</Label>
+                    <Textarea
+                      id="workHistory"
+                      name="workHistory"
+                      placeholder="e.g., Sales Associate at Tech Corp (2020-2022), Intern at Startup Inc. (Summer 2019)"
+                      className="mt-1 min-h-[120px] text-base"
+                      value={textInputs.workHistory}
+                      onChange={handleTextChange}
+                    />
+                  </div>
+                   <div>
+                    <Label htmlFor="skills" className="text-sm font-medium">Skills</Label>
+                    <Textarea
+                      id="skills"
+                      name="skills"
+                      placeholder="e.g., JavaScript, React, Public Speaking, Market Research, SQL"
+                      className="mt-1 min-h-[100px] text-base"
+                      value={textInputs.skills}
+                      onChange={handleTextChange}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="careerGoals" className="text-sm font-medium">Career Goals</Label>
+                     <Textarea
+                      id="careerGoals"
+                      name="careerGoals"
+                      placeholder="e.g., To become a product manager in a fast-growing tech company, to find a marketing role where I can use my bilingual skills."
+                      className="mt-1 min-h-[100px] text-base"
+                      value={textInputs.careerGoals}
+                      onChange={handleTextChange}
+                    />
+                  </div>
+                </div>
               </Card>
             </TabsContent>
           </Tabs>
