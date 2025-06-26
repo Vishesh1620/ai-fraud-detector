@@ -20,6 +20,9 @@ export async function getMatches(
 
   try {
     const results = await findMatches(input)
+    if (!results) {
+      throw new Error('The AI failed to generate a valid response. Please try again.');
+    }
     // Sort matches by score in descending order
     results.matches.sort((a, b) => b.matchScore - a.matchScore)
     return results

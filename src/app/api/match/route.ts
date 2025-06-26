@@ -20,6 +20,9 @@ export async function POST(request: Request) {
     }
 
     const results = await findMatches(input)
+    if (!results) {
+      return NextResponse.json({ error: 'The AI failed to generate a valid response.' }, { status: 500 });
+    }
     // Sort matches by score in descending order
     results.matches.sort((a, b) => b.matchScore - a.matchScore)
     return NextResponse.json(results);

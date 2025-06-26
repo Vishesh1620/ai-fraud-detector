@@ -58,7 +58,7 @@ const MatchOutputSchema = z.object({
 export type MatchOutput = z.infer<typeof MatchOutputSchema>;
 
 
-export async function findMatches(input: MatchInput): Promise<MatchOutput> {
+export async function findMatches(input: MatchInput): Promise<MatchOutput | null> {
   return matchProfilesFlow(input);
 }
 
@@ -140,6 +140,6 @@ const matchProfilesFlow = ai.defineFlow(
   },
   async (input) => {
     const {output} = await prompt(input);
-    return output!;
+    return output;
   }
 );
