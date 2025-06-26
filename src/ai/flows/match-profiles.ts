@@ -61,11 +61,16 @@ export type MatchOutput = z.infer<typeof MatchOutputSchema>;
 // The exported function simply calls the flow and returns its result.
 // The flow itself will throw an error if the AI response is invalid.
 export async function findMatches(input: MatchInput): Promise<MatchOutput> {
-  return matchProfilesFlow(input);
+  const results = await matchProfilesFlow(input);
+  if (!results) {
+    throw new Error('The AI failed to generate a valid response. Please try again.');
+  }
+  return results;
 }
 
 const prompt = ai.definePrompt({
   name: 'matchProfilePrompt',
+  model: 'googleai/gemini-1.5-flash-001',
   system: 'You are a helpful and encouraging career-matching expert for newcomers. Your goal is to provide guidance by analyzing a newcomer\'s profile and matching them with suitable mentors and jobs. Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Do not include markdown formatting like ```json or any text outside of the JSON object itself.',
   input: {schema: MatchInputSchema},
   output: {schema: MatchOutputSchema},
@@ -144,8 +149,8 @@ const matchProfilesFlow = ai.defineFlow(
     const output = response.output;
 
     if (!output) {
-      console.error("⚠️ Raw AI response:", response.text);
-      throw new Error("AI response was invalid. Raw text:\n" + response.text);
+      console.error("AI response was invalid. Raw text:\n", response.text);
+      throw new Error("AI response was not in the expected format.");
     }
     
     // Sort matches by score in descending order
