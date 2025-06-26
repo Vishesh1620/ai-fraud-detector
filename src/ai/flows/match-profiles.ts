@@ -58,7 +58,9 @@ const MatchOutputSchema = z.object({
 export type MatchOutput = z.infer<typeof MatchOutputSchema>;
 
 
-export async function findMatches(input: MatchInput): Promise<MatchOutput | null> {
+// The exported function simply calls the flow and returns its result.
+// The flow itself will throw an error if the AI response is invalid.
+export async function findMatches(input: MatchInput): Promise<MatchOutput> {
   return matchProfilesFlow(input);
 }
 
@@ -108,7 +110,7 @@ Available Jobs:
 - Required Skills: {{requiredSkills}}
 {{/each}}
 
-Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
+Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Do not include markdown formatting like \`\`\`json or any text outside of the JSON object itself. Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
 `,
   config: {
     safetySettings: [
@@ -139,7 +141,16 @@ const matchProfilesFlow = ai.defineFlow(
     outputSchema: MatchOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const response = await prompt(input);
+    const output = response.output;
+
+    if (!output) {
+      console.error(
+        'AI failed to produce valid JSON output. Raw text response:',
+        response.text
+      );
+      throw new Error('AI failed to produce a structured response.');
+    }
     return output;
   }
 );
