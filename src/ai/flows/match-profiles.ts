@@ -65,7 +65,7 @@ export async function findMatches(input: MatchInput): Promise<MatchOutput> {
 
 const prompt = ai.definePrompt({
   name: 'matchProfilePrompt',
-  model: 'googleai/gemini-1.5-flash-001',
+  model: 'googleai/gemini-1.5-flash-latest',
   system: 'You are a helpful and encouraging career-matching expert for newcomers. Your goal is to provide guidance by analyzing a newcomer\'s profile and matching them with suitable mentors and jobs. Your final output must be a single, valid JSON object that strictly adheres to the requested output schema. Do not include markdown formatting like ```json or any text outside of the JSON object itself.',
   input: {schema: MatchInputSchema},
   output: {schema: MatchOutputSchema},
@@ -111,29 +111,27 @@ Available Jobs:
 
 Return a list of all mentors and jobs, each with a match score and summary. The score should reflect a realistic potential for a good connection or job fit.
 `,
-  config: {
-    response: {
-      format: 'json',
+config: {
+  safetySettings: [
+    {
+      category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+      threshold: 'BLOCK_NONE',
     },
-    safetySettings: [
-      {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_NONE',
-      },
-      {
-        category: 'HARM_CATEGORY_HATE_SPEECH',
-        threshold: 'BLOCK_NONE',
-      },
-      {
-        category: 'HARM_CATEGORY_HARASSMENT',
-        threshold: 'BLOCK_NONE',
-      },
-      {
-        category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-        threshold: 'BLOCK_NONE',
-      },
-    ],
-  },
+    {
+      category: 'HARM_CATEGORY_HATE_SPEECH',
+      threshold: 'BLOCK_NONE',
+    },
+    {
+      category: 'HARM_CATEGORY_HARASSMENT',
+      threshold: 'BLOCK_NONE',
+    },
+    {
+      category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+      threshold: 'BLOCK_NONE',
+    },
+  ],
+}
+,
 });
 
 const matchProfilesFlow = ai.defineFlow(
